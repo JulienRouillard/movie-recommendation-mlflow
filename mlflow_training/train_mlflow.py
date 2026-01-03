@@ -21,11 +21,11 @@ import os
 import json
 
 # MLflow configuration
-MLFLOW_TRACKING_URI = "https://julienrouillard-mlflow-movie-recommandation.hf.space"
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 EXPERIMENT_NAME = "movie_recommendation_system"
 
 # Database configuration
-DB_URL = os.getenv("DB_URL", "postgresql://neondb_owner:npg_s5NhbHAIkE3W@ep-square-truth-agcbtrap.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require")
+NEON_CONNECTION_STRING = os.getenv("NEON_CONNECTION_STRING")
 
 print("=" * 60)
 print("MOVIE RECOMMENDATION SYSTEM - MLFLOW TRAINING")
@@ -455,7 +455,7 @@ def main(n_components_svd=500, n_components_pca=128, n_epochs_hybrid=5,
         mlflow.log_param("alpha", alpha)
         
         # 1. Load data
-        ratings, movies = load_data_from_neon(DB_URL)
+        ratings, movies = load_data_from_neon(NEON_CONNECTION_STRING)
         mlflow.log_param("total_ratings", len(ratings))
         mlflow.log_param("total_users", ratings['userId'].nunique())
         mlflow.log_param("total_movies", len(movies))
