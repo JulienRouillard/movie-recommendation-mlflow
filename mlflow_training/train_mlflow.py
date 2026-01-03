@@ -18,6 +18,7 @@ import psycopg2
 from sqlalchemy import create_engine
 import pickle
 import os
+import json
 
 # MLflow configuration
 MLFLOW_TRACKING_URI = "https://julienrouillard-mlflow-movie-recommandation.hf.space"
@@ -512,6 +513,9 @@ def main(n_components_svd=500, n_components_pca=128, n_epochs_hybrid=5,
         
         # 10. Save complete pipeline
         print("\n💾 Saving pipeline artifacts...")
+        artifacts_dir = Path("artifacts")
+        artifacts_dir.mkdir(exist_ok=True)
+
         pipeline = {
             'user_to_idx': user_to_idx,
             'movie_to_idx': movie_to_idx,
@@ -529,22 +533,26 @@ def main(n_components_svd=500, n_components_pca=128, n_epochs_hybrid=5,
         }
 
         # Save locally then log to MLflow
-        with open('pipeline.pkl', 'wb') as f:
+        pipeline_path = artifacts_dir / "pipeline.pkl"
+        with open(pipeline_path, 'wb') as f:
             pickle.dump(pipeline, f)
         
-        mlflow.log_artifact('pipeline.pkl')
+        mlflow.log_artifact(str(pipeline_path))
+
+        metrics_path = artifacts_dir / "metrics.json"
+        metrics_path.write_text(json.dumps({
+            "rmse": float(test_rmse),
+            "mae": float(test_mae)
+        }))
+        mlflow.log_artifact(str(metrics_path))
 
         # Register in Model Registry
         run_id = mlflow.active_run().info.run_id
         mlflow.register_model(
-            model_uri=f"runs:/{run_id}/pipeline.pkl",
+            model_uri=f"runs:/{run_id}/{pipeline_path.name}",
             name="movie_recommendation_hybrid_system"
         )
         print("  ✅ Model registered in Model Registry as 'movie_recommendation_hybrid_system'")
-
-        # Clean up local file
-        os.remove('pipeline.pkl')
-        print("  - Local file cleaned up")
         
         print("\n✅ Training complete!")
         print(f"  - Test RMSE: {test_rmse:.4f}")
