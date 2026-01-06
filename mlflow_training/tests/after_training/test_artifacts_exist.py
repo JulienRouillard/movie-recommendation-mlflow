@@ -1,4 +1,5 @@
-# Ensures the training job produced the expected pipeline and metrics artifacts on disk.
+# This test checks for the existence of specific artifacts after model training.
+
 from pathlib import Path
 
 def test_pipeline_artifact_exists():
