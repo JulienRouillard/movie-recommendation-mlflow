@@ -19,6 +19,7 @@ raw/
 prepared/
 *.csv
 *.parquet
+.pkl
 
 # Exception: Keep README or documentation CSVs if any
 !sample_data.csv
