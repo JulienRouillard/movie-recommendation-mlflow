@@ -17,11 +17,18 @@
 - [Architecture](#-architecture)
 - [Tech Stack](#-tech-stack)
 - [Quick Start](#-quick-start)
-- [Project Structure](#-project-structure)
+- [Deployed Applications](#-deployed-applications)
+- [Jury Presentation Components](#-jury-presentation-components-january-8th-2026)
 - [Results](#-results)
 - [Team](#-team)
+- [Repository Structure](#-repository-structure)
+- [Comprehensive Airflow DAGs](#-comprehensive-airflow-dags)
 - [Documentation](#-documentation)
+- [Future Enhancements](#-future-enhancements)
+- [Learning Outcomes](#-learning-outcomes)
 - [Acknowledgments](#-acknowledgments)
+- [License](#-license)
+- [Project Timeline](#-project-timeline)
 
 ---
 
@@ -38,12 +45,12 @@ The system demonstrates **industry-standard machine learning operations**, inclu
 
 **What makes this project special:**
 - Real-world MLOps architecture (not just a Jupyter notebook!)
-- Continuous monitoring simulating 3 weeks of production operation
-- Automated retraining triggered by data drift
+- Continuous monitoring simulating 7 weeks of production operation
+- Model retraining triggered by data drift
 - Complete CI/CD/CT/CM pipeline
 - Free-tier infrastructure (€0 budget)
 
-**Please note that this project is a team work in active progress so frequent changes will be introduced to this repository.**
+**Please note that this project is a comprehensive team work nearing completion with multiple deployed components and comprehensive monitoring systems.**
 ---
 
 ## ✨ Key Features
@@ -55,7 +62,7 @@ The system demonstrates **industry-standard machine learning operations**, inclu
 - **Complete Audit Trail:** Every decision logged to database
 
 ### 🔄 Automated Continuous Training
-- **GitHub Actions Integration:** Triggered automatically when drift detected
+- **Manual Trigger via Airflow:** Retraining triggered manually when drift detected
 - **MLflow Experiment Tracking:** All training runs versioned and comparable
 - **Model Registry:** Automatic promotion of improved models to production
 - **Performance Monitoring:** RMSE, MAE, Precision@K tracked over time
@@ -63,7 +70,7 @@ The system demonstrates **industry-standard machine learning operations**, inclu
 ### 🚀 Production Deployment
 - **FastAPI REST API:** Modern, fast, auto-documented endpoints
 - **Docker Containerization:** Reproducible deployment anywhere
-- **Cloud Hosting:** Deployed on Render/Railway (free tier)
+- **HF Hosting:** Deployed on Hugging Face Spaces (free tier)
 - **Model Versioning:** Seamless updates without downtime
 
 ### 📊 Complete Observability
@@ -83,23 +90,18 @@ The system demonstrates **industry-standard machine learning operations**, inclu
 │                    CINEMATCH MLOPS PIPELINE                 │
 └─────────────────────────────────────────────────────────────┘
 
-Data Layer                Orchestration              Training & Deployment
+Data Layer            Orchestration & Training     Tracking & Deployment
     │                          │                              │
     ▼                          ▼                              ▼
 ┌─────────┐             ┌──────────────┐            ┌─────────────────┐
-│  Neon   │◀───────────▶│   Airflow   │───────────▶│ GitHub Action  │
-│  (DB)   │             │   (Docker)   │            │  (CI/CD/CT)     │
+│  Neon   │◀──────────▶│   Airflow    │──────────▶│     MLflow      │
+│  (DB)   │             │   (Docker)   │            │  (Experiments)  │
 │         │             │              │            │                 │
 │ • Data  │             │ • Ingestion  │            │ • Training      │
 │ • Meta  │             │ • Monitoring │            │ • Evaluation    │
-│ • Logs  │             │ • Triggers   │            │ • Deployment    │
-└─────────┘             └──────────────┘            └────────┬────────┘
-                                                             │
-                                                             ▼
-                                                    ┌──────────────────┐
-                                                    │     MLflow       │
-                                                    │  (Experiments)   │
-                                                    └────────┬─────────┘
+│ • Logs  │             │ • Manual     │            │ • Model Registry│
+│         │             │   Retraining │            │                 │
+└─────────┘             └──────────────┘            └────────┬───────-┘
                                                              │
                                                              ▼
                                                     ┌──────────────────┐
@@ -132,8 +134,8 @@ Data Layer                Orchestration              Training & Deployment
 ### Deployment
 - **API Framework:** FastAPI 0.109
 - **Server:** Uvicorn (ASGI)
-- **Hosting:** Render / Railway (free tier)
-- **CI/CD:** GitHub Actions
+- **Hosting:** Hugging Face
+- **Manual Operations:** Airflow-based retraining
 
 ---
 
@@ -149,7 +151,7 @@ Data Layer                Orchestration              Training & Deployment
 ### Installation
 
 ```bash
-# 1. Clone the repository
+# 1. Clone the main repository
 git clone https://github.com/AgaHei/Movie_Recommendation.git
 cd cinematch
 
@@ -164,6 +166,10 @@ docker-compose up -d
 # 4. Access Airflow UI
 open http://localhost:8080
 # Login: airflow / airflow
+
+# Additional Components:
+# - MLflow Experiments: https://github.com/JulienRouillard/movie-recommendation-mlflow
+# - FastAPI Service: https://github.com/JulienRouillard/movie-recommendation-api
 ```
 
 ### Running Your First Pipeline
@@ -181,82 +187,85 @@ open http://localhost:8080
 
 **[📖 Detailed Setup Guide](docs/airflow/01-airflow-setup.md)**
 
----
+### 🌐 Deployed Applications
 
-## 📁 Project Structure
+#### Production Services (Live)
+- **🤖 MLflow Experiments & Model Registry**  
+  https://julienrouillard-mlflow-movie-recommandation.hf.space/  
+  *Complete experiment tracking, model comparison, and versioning*
 
-```
-cinematch/
-├── README.md                          ← You are here!
-├── .github/
-│   └── workflows/
-│       ├── model_training.yml         ← CI/CD for training
-│       └── deploy_api.yml             ← Deployment automation
-│
-├── airflow/                           ← Orchestration
-│   ├── dags/
-│   │   ├── buffer_ingestion_dag.py   ← Data loading
-│   │   ├── drift_monitoring_dag.py   ← Drift detection
-│   │   └── trigger_retraining_dag.py ← Training trigger
-│   ├── docker-compose.yml
-│   └── .env.example
-│
-├── data/                              ← Data pipeline
-│   ├── raw/                           ← Original MovieLens
-│   ├── prepared/                      ← Processed datasets
-│   │   ├── ratings_initial_ml.parquet
-│   │   └── buffer_batches/
-│   └── ingestion_scripts/
-│       └── load_academic_dataset.py
-│
-├── models/                            ← ML training
-│   ├── train_model.py                ← Training script
-│   ├── evaluate.py                   ← Model evaluation
-│   └── requirements.txt
-│
-├── api/                               ← Deployment
-│   ├── main.py                       ← FastAPI app
-│   ├── Dockerfile
-│   └── requirements.txt
-│
-└── docs/                              ← Documentation
-    ├── README.md                      ← Docs navigation
-    ├── airflow/
-    │   ├── 01-airflow-setup.md
-    │   ├── 02-buffer-ingestion.md
-    │   └── 03-drift-monitoring.md
-    ├── data/
-    │   ├── data-pipeline-overview.md
-    │   └── neon-schema.md
-    └── mlops/
-        ├── architecture-diagram.md
-        └── weekly-simulation-log.md
-```
+- **🚀 FastAPI Recommendation Service**  
+  https://julienrouillard-movie-recommendation-api.hf.space/docs  
+  *Production REST API with interactive documentation*
+
+#### Deployed Development Tools
+- **📊 MLOps Monitoring Dashboard** (Streamlit)  
+  https://movierecommendation-hjhgd45vqk4zdaprsh6arw.streamlit.app/  
+  *Real-time drift monitoring, pipeline status, and system health*
+
+- **🎬 Movie Recommendation Demo** (Streamlit)  
+  https://julienrouillard-movie-recommendation-interface.hf.space/  
+  *Interactive recommendation system demonstration*
 
 ---
+
+## 🎯 Jury Presentation Components (January 8th, 2026)
+
+### 🖥️ **Live Demo Applications**
+
+#### 1. **📊 MLOps Monitoring Dashboard** (Streamlit)
+**Live Demo:** https://movierecommendation-hjhgd45vqk4zdaprsh6arw.streamlit.app/
+
+**Key Features for Presentation:**
+- ✨ **Real-time drift detection visualization** - KS statistics over time
+- 📈 **System health metrics** - Buffer size, alert counts, pipeline status  
+- 🔍 **Interactive filtering** - Filter alerts by date range and severity
+- 📋 **Complete audit trail** - All MLOps decisions logged and queryable
+- 🎨 **Professional UI** - Production-ready monitoring interface
+
+**Demo Flow:**
+1. Overview page → System metrics and current status
+2. Drift Monitoring → Show Week 7 drift detection trigger  
+3. Pipeline Status → MLOps architecture and retraining decisions
+
+#### 2. **🎬 Movie Recommendation Demo** (Streamlit)
+**Live Demo:** https://julienrouillard-movie-recommendation-interface.hf.space/  
+**Interactive User Experience Demo**
+
+**Key Features for Presentation:**
+- 🔍 **Movie search and selection** - Browse MovieLens catalog
+- ⭐ **Personal rating interface** - Rate movies to build user profile
+- 🤖 **Real-time recommendations** - Generate personalized suggestions
+- 📊 **Recommendation explanations** - Show why movies were recommended  
+- 🎯 **Model performance metrics** - Display accuracy and confidence scores
+
+**Demo Flow:**
+1. User ID selection → Rate sample movies
+2. Recommendation generation → Show personalized results (top 50 recommended movies)
+3. Model insights → Explain collaborative filtering approach
+
+### 🌐 **Production Deployments** (Live URLs)
+- **MLflow Experiments:** https://julienrouillard-mlflow-movie-recommandation.hf.space/
+- **FastAPI Service:** https://julienrouillard-movie-recommendation-api.hf.space/docs
+
+### 💡 **Presentation Strategy**
+> **"Complete MLOps ecosystem demonstration: From data ingestion through drift detection to model retraining, with both technical monitoring dashboards and user-facing recommendation interfaces."**
+
+---
+
 
 ## 📊 Results
 
-### 3-Week Drift Monitoring Simulation
+### 7-Week Drift Monitoring Simulation
 
 Our simulation demonstrated progressive drift detection over 3 weeks:
 
-| Week | Buffer Size | KS Statistic | Mean Change | Decision |
-|------|-------------|--------------|-------------|----------|
-| **1** | 500k ratings | 0.0176 | +0.97% | ✅ No drift - Continue |
-| **2** | 1M ratings | --- | ---| ⚠️ Potential early signals |
-| **3** | 1.5M ratings | --- | --- | 🚨 Potential DRIFT Retrain |
+    | Weeks | Buffer Size | KS Statistic | Mean Change | Decision                 |
+    |------|-------------|------------ --|-------------|--------------------------|
+    | **1-6**  | 600k ratings | 0.014    | 0.011       | ✅ No drift - Continue   |
+    | **7**    | 100K ratings | 0.097    | 0.065        | 🚨 DRIFT Retrain needed |
 
-### Model Performance Improvement
 
-After retraining with accumulated buffer data:
-
-| Metric | Baseline Model | Retrained Model | Improvement |
-|--------|----------------|-----------------|-------------|
-| **RMSE** | --- | ---| ---  |
-| **MAE** | --- | --- | --- |
-| **Precision@10** | --- | --- | ---|
-| **Training Data** | 700k | --- | ---|
 
 **Key Achievement:** Automated system detected drift and triggered retraining, resulting in measurable model improvement!
 
@@ -273,15 +282,132 @@ After retraining with accumulated buffer data:
 | Name | Role | Responsibilities |
 |------|------|------------------|
 | **[Agnès]** | Data Pipeline & Monitoring | Airflow orchestration, drift detection, data engineering, Neon database design |
-| **[Julien]** | Model Training & Experimentation | Collaborative filtering models, MLflow integration, hyperparameter tuning |
-| **[Matéo]** | Deployment & API | FastAPI development, Docker containerization, cloud deployment |
+| **[Julien]** | Model Training & Experimentation | Collaborative filtering models, MLflow integration, hyperparameter tuning, FastAPI development |
+| **[Matéo]** | Deployment & Project coordination| Testing at all stages, Docker containerization, deployment |
 
 ### Collaboration
 
 - **Version Control:** Git + GitHub
-- **Project Management:** GitHub Projects / Trello
 - **Communication:** Discord
 - **Documentation:** Markdown in `/docs`
+
+---
+
+## 🏗️ Repository Structure
+
+The CineMatch project is organized across **3 specialized GitHub repositories**:
+
+### 📂 Main Repository - Data Pipeline & Orchestration
+**[🔗 AgaHei/Movie_Recommendation](https://github.com/AgaHei/Movie_Recommendation)**
+```
+cinematches/
+├── airflow/                 # Orchestration & DAGs
+│   ├── dags/
+│   │   ├── buffer_ingestion_weekly.py     # Data ingestion pipeline
+│   │   ├── drift_monitoring.py            # Statistical drift detection
+│   │   ├── trigger_retraining_dag.py      # Model retraining trigger
+│   │   └── data_testing.py                # Data quality validation
+│   ├── docker-compose.yml
+│   └── .env                 # Database connections
+├── dashboard/              # MLOps Monitoring Dashboard
+│   ├── cinematch_dashboard.py             # Streamlit monitoring app
+│   └── README_DASHBOARD.md  # Dashboard setup guide
+├── docs/                   # Comprehensive documentation
+└── data/                   # Processed datasets
+```
+
+### 🤖 MLflow Repository - Model Training & Experiments
+**[🔗 JulienRouillard/movie-recommendation-mlflow](https://github.com/JulienRouillard/movie-recommendation-mlflow)**
+- Collaborative filtering model implementations
+- MLflow experiment tracking and model registry
+- Hyperparameter optimization
+- Model evaluation and comparison
+- **Live Demo:** https://julienrouillard-mlflow-movie-recommandation.hf.space/
+
+### 🚀 FastAPI Repository - Production API
+**[🔗 JulienRouillard/movie-recommendation-api](https://github.com/JulienRouillard/movie-recommendation-api)**
+- REST API endpoints for movie recommendations
+- Model serving and inference pipeline
+- Docker containerization
+- API documentation and testing
+- **Live API:** https://julienrouillard-movie-recommendation-api.hf.space/docs
+
+---
+
+## 📊 Comprehensive Airflow DAGs
+
+Our MLOps pipeline includes **7 specialized DAGs** handling all aspects of the ML lifecycle:
+
+### 📊 Data Pipeline DAGs
+
+#### 🔄 Data Ingestion - `buffer_ingestion_weekly.py`
+- **Purpose:** Simulates weekly data ingestion from production systems
+- **Features:** Incremental loading, data validation, schema enforcement
+- **Trigger:** Weekly schedule or manual execution
+- **Output:** New ratings data loaded to buffer tables
+
+### 🔍 Monitoring & Analysis DAGs
+
+#### 📈 Drift Monitoring - `drift_monitoring.py`
+- **Purpose:** Statistical drift detection using KS tests and distribution analysis
+- **Features:** 
+  - Kolmogorov-Smirnov statistical testing
+  - Mean and variance change detection  
+  - Configurable thresholds and sensitivity
+  - Cumulative evidence accumulation
+- **Trigger:** Daily monitoring schedule
+- **Output:** Drift alerts and retraining recommendations
+
+#### 🎯 Batch Predictions - `batch_predictions_dag.py`
+- **Purpose:** Model drift detection through performance evaluation
+- **Features:**
+  - Batch prediction processing via REST API
+  - MAE/RMSE performance monitoring  
+  - Automated retraining trigger on performance degradation
+  - Prediction results storage and tracking
+- **Trigger:** Triggered by buffer ingestion with batch_id
+- **Output:** Performance metrics and drift alerts
+
+### 🤖 Model Training & Deployment DAGs
+
+#### 🔄 Retraining Pipeline - `trigger_retraining_dag.py`
+- **Purpose:** Orchestrates model retraining when drift is detected
+- **Features:**
+  - Automated model training with accumulated buffer data
+  - MLflow integration for experiment tracking
+  - Model validation and performance comparison
+  - Automated promotion of improved models
+- **Trigger:** Manual execution when drift alerts are confirmed
+- **Output:** New model versions in MLflow registry
+
+#### ✅ After Training Tests - `after_training_tests_dag.py`
+- **Purpose:** Post-training validation and quality assurance
+- **Features:**
+  - Automated testing of newly trained models
+  - Model performance validation
+  - Integration testing with MLflow
+- **Trigger:** Manual execution after model retraining
+- **Output:** Training validation reports
+
+### 🚀 CI/CD & Testing DAGs
+
+#### 🧪 CI Test Runner - `ci_run_tests.py`
+- **Purpose:** Continuous integration testing before pipeline execution
+- **Features:**
+  - Pytest execution within Airflow container
+  - Automated downstream DAG triggering on success
+  - Pre-deployment validation
+- **Trigger:** Manual execution for CI workflows
+- **Output:** Test results and pipeline validation
+
+#### 🐳 Docker Build Testing - `ci_docker_build_test.py`
+- **Purpose:** Docker containerization testing and validation
+- **Features:**
+  - Docker image building and testing
+  - Container environment validation
+  - Pre-training Docker setup verification
+- **Trigger:** Manual execution for deployment validation
+- **Output:** Docker build status and container readiness
 
 ---
 
@@ -305,15 +431,45 @@ Comprehensive documentation is available in the [`/docs`](docs/) directory:
 
 ---
 
+## 🚀 Future Enhancements
+
+### Planned Improvements (Phase 2)
+
+#### 🤖 Automated CI/CD with GitHub Actions
+- **Automated Retraining:** Trigger training via GitHub API when drift detected
+- **Continuous Deployment:** Auto-deploy improved models to production
+- **Pipeline Integration:** Seamless Airflow → GitHub Actions workflow
+- **Benefits:** Zero-touch MLOps, faster iteration cycles
+
+#### 📏 Advanced Monitoring
+- **Real-time Dashboards:** Grafana/Plotly integration
+- **Alert System:** Email/Slack notifications for drift events
+- **Performance Tracking:** A/B testing for model versions
+- **Data Quality Monitoring:** Schema validation, anomaly detection
+
+#### 🌐 Production Scalability
+- **Kubernetes Deployment:** Container orchestration at scale
+- **Load Balancing:** Handle high-traffic recommendation requests
+- **Caching Layer:** Redis for faster recommendation serving
+- **Multi-model Serving:** Support for different recommendation algorithms
+
+#### 📋 Enhanced ML Features
+- **Deep Learning Models:** Neural collaborative filtering
+- **Content-based Filtering:** Hybrid recommendation approach
+- **Online Learning:** Real-time model updates
+- **Explainable AI:** Recommendation reasoning
+
+---
+
 ## 🎓 Learning Outcomes
 
 This project demonstrates skills in:
 
 ### MLOps Practices
-✅ **Continuous Integration (CI)** - Automated code testing  
-✅ **Continuous Deployment (CD)** - Automated model deployment  
-✅ **Continuous Training (CT)** - Drift-triggered retraining  
-✅ **Continuous Monitoring (CM)** - Statistical drift detection  
+✅ **Continuous Integration (CI)** - Multi-repo development with quality controls  
+✅ **Continuous Deployment (CD)** - Automated deployments to Hugging Face Spaces  
+✅ **Continuous Training (CT)** - Drift-triggered retraining with MLflow tracking  
+✅ **Continuous Monitoring (CM)** - Comprehensive drift detection and dashboard monitoring  
 
 ### Technical Skills
 ✅ **Data Engineering** - ETL pipelines, database design, data quality  
@@ -327,7 +483,7 @@ This project demonstrates skills in:
 ✅ **FastAPI** - Modern API development  
 ✅ **Docker** - Containerization and deployment  
 ✅ **PostgreSQL** - Relational database design  
-✅ **GitHub Actions** - CI/CD automation  
+🔄 **GitHub Actions** - CI/CD automation (future enhancement)  
 
 ---
 
@@ -343,8 +499,6 @@ https://grouplens.org/datasets/movielens/
 - **MLflow** - [mlflow.org](https://mlflow.org/)
 - **FastAPI** - [fastapi.tiangolo.com](https://fastapi.tiangolo.com/)
 - **Neon** - [neon.tech](https://neon.tech/)
-- **Dagshub** - [dagshub.com](https://dagshub.com/)
-
 
 ### Bootcamp
 **Jedha Bootcamp** - Data Science & Engineering Lead Bootcamp
@@ -362,13 +516,15 @@ This project is an academic work created for the Jedha Bootcamp final project (D
 
 ## 📅 Project Timeline
 
-- **Week 1-2:** Data pipeline & Airflow setup
-- **Week 2-3:** Drift monitoring implementation
-- **Week 3-4:** Model training & MLflow integration
-- **Week 4:** API deployment & final polish
-- **Presentation:** [Date TBD]
+- **Week 1-2:** Data pipeline & Airflow setup ✅ **COMPLETE**
+- **Week 2-3:** Drift monitoring implementation ✅ **COMPLETE**  
+- **Week 3-4:** Model training & MLflow integration ✅ **COMPLETE**
+- **Week 4:** API deployment & final polish ✅ **COMPLETE**
+- **Week 4-5:** MLOps monitoring dashboard ✅ **COMPLETE**
+- **Week 5:** Multi-repo deployment & integration ✅ **COMPLETE**
+- **Presentation:** January 8th, 2026 🎯 **IN PROGRESS**
 
-**Status:** 🚧 In Progress - Data Pipeline Complete ✅
+**Status:** 🎉 **PROJECT ALMOST COMPLETE** - All components in final stage of testing
 
 ---
 
